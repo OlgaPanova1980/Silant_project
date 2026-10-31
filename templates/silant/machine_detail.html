@@ -1,0 +1,46 @@
+{% extends 'base.html' %}
+{% block content %}
+<style>
+    table { width: 100%; border-collapse: collapse; text-align: left; margin-top: 20px; }
+    th, td { padding: 12px; border: 1px solid #CCC; font-size: 16px; }
+    th { background: var(--primary-color); color: var(--white); width: 40%; }
+    .btn-back { display: inline-block; background: var(--primary-color); color: var(--white); text-decoration: none; padding: 10px 20px; border-radius: 4px; font-weight: bold; margin-top: 20px; }
+    .directory-link { color: var(--primary-color); text-decoration: underline; cursor: pointer; }
+    .directory-link:hover { color: var(--accent-color); }
+    .conf-header { background: #F2F2F2; color: var(--primary-color); font-weight: bold; text-align: center; }
+</style>
+
+<div style="max-width: 800px; margin: 0 auto; background: var(--white); border: 1px solid #CCC; border-radius: 4px; padding: 25px; box-shadow: 0 2px 5px rgba(0,0,0,0.05);">
+    <h2 style="color: var(--primary-color); border-bottom: 2px solid var(--primary-color); padding-bottom: 10px; margin-bottom: 20px;">Карточка машины {{ machine.vin }}</h2>
+    
+    <table>
+        <tr><th>Характеристика</th><td><b>Значение</b></td></tr>
+        <tr><th>Заводской № машины</th><td style="color: var(--accent-color); font-weight: bold;">{{ machine.vin }}</td></tr>
+        <tr><th>Модель техники</th><td><span class="directory-link" onclick="alert('{{ machine.vehicle_model.description|escapejs }}')">{{ machine.vehicle_model.name }}</span></td></tr>
+        <tr><th>Модель двигателя</th><td><span class="directory-link" onclick="alert('{{ machine.engine_model.description|escapejs }}')">{{ machine.engine_model.name }}</span></td></tr>
+        <tr><th>Заводской № двигателя</th><td>{{ machine.engine_num }}</td></tr>
+        <tr><th>Модель трансмиссии</th><td><span class="directory-link" onclick="alert('{{ machine.transmission_model.description|escapejs }}')">{{ machine.transmission_model.name }}</span></td></tr>
+        <tr><th>Заводской № трансмиссии</th><td>{{ machine.transmission_num }}</td></tr>
+        <tr><th>Модель ведущего моста</th><td><span class="directory-link" onclick="alert('{{ machine.drive_axle_model.description|escapejs }}')">{{ machine.drive_axle_model.name }}</span></td></tr>
+        <tr><th>Заводской № ведущего моста</th><td>{{ machine.drive_axle_num }}</td></tr>
+        <tr><th>Модель управляемого моста</th><td><span class="directory-link" onclick="alert('{{ machine.steering_axle_model.description|escapejs }}')">{{ machine.steering_axle_model.name }}</span></td></tr>
+        <tr><th>Заводской № управляемого моста</th><td>{{ machine.steering_axle_num }}</td></tr>
+        
+        {% if user.is_authenticated %}
+            <tr><td colspan="2" class="conf-header">Конфиденциальная информация</td></tr>
+            <tr><th>Договор поставки №, дата</th><td>{{ machine.delivery_contract }}</td></tr>
+            <tr><th>Дата отгрузки с завода</th><td>{{ machine.shipping_date|date:"d.m.Y" }}</td></tr>
+            <tr><th>Грузополучатель</th><td>{{ machine.consignee }}</td></tr>
+            <tr><th>Адрес поставки (эксплуатации)</th><td>{{ machine.delivery_address }}</td></tr>
+            <tr><th>Комплектация (доп. опции)</th><td>{{ machine.equipment }}</td></tr>
+            <tr><th>Клиент</th><td>{{ machine.client.username }}</td></tr>
+            <tr><th>Сервисная компания</th><td>{{ machine.service_company.name }}</td></tr>
+        {% endif %}
+    </table>
+    
+    <div style="text-align: center;">
+        <a href="/" class="btn-back">Вернуться на главную</a>
+    </div>
+</div>
+{% endblock %}
+

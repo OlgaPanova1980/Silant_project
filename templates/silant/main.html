@@ -1,0 +1,299 @@
+{% extends 'base.html' %}
+{% block content %}
+
+{% if not user.is_authenticated %}
+<div style="margin-bottom: 50px; text-align: center;">
+    <h3 style="color: var(--dark); margin-bottom: 40px; font-weight: normal;">Проверьте комплектацию и технические характеристики техники Силант</h3>
+    <form method="GET" action="/" style="display: flex; justify-content: center; gap: 10px; max-width: 600px; margin: 20px auto; align-items: center;">
+        <label style="font-weight: bold; color: var(--dark); white-space: nowrap;">Заводской номер:</label>
+        <input type="text" name="vin" value="{{ vin_query|default:'' }}" placeholder="Введите номер..." required style="flex:1; padding: 10px; border: 2px solid var(--primary-color); border-radius: 4px;">
+        <button type="submit" class="tab-btn active" style="background: var(--primary-color); color: var(--white); border: none; padding: 10px 20px; border-radius: 4px; font-weight: bold; cursor: pointer;">Поиск</button>
+    </form>
+</div>
+
+{% if vin_query %}
+    <div style="overflow-x: auto; margin-top: 30px;">
+        <p style="margin-top: 25px; margin-bottom: 40px; color: var(--dark); font-size: 16px; text-align: left;">Информация о комплектации и технических характеристиках Вашей техники</p>
+        {% if machines %}
+            <table>
+                <tr>
+                    <th>Зав. № машины</th><th>Модель техники</th><th>Модель двигателя</th><th>№ двигателя</th><th>Модель трансмиссии</th><th>№ трансмиссии</th><th>Модель вед. моста</th><th>№ вед. моста</th><th>Модель упр. моста</th><th>№ упр. моста</th>
+                </tr>
+                {% for m in machines %}
+                <tr>
+                    <td style="font-weight:bold; color:var(--accent-color);">{{ m.vin }}</td>
+                    <td><span class="directory-link" onclick="alert('{{ m.vehicle_model.description|escapejs }}')">{{ m.vehicle_model.name }}</span></td>
+                    <td><span class="directory-link" onclick="alert('{{ m.engine_model.description|escapejs }}')">{{ m.engine_model.name }}</span></td>
+                    <td>{{ m.engine_num }}</td>
+                    <td><span class="directory-link" onclick="alert('{{ m.transmission_model.description|escapejs }}')">{{ m.transmission_model.name }}</span></td>
+                    <td>{{ m.transmission_num }}</td>
+                    <td><span class="directory-link" onclick="alert('{{ m.drive_axle_model.description|escapejs }}')">{{ m.drive_axle_model.name }}</span></td>
+                    <td>{{ m.drive_axle_num }}</td>
+                    <td><span class="directory-link" onclick="alert('{{ m.steering_axle_model.description|escapejs }}')">{{ m.steering_axle_model.name }}</span></td>
+                    <td>{{ m.steering_axle_num }}</td>
+                </tr>
+                {% endfor %}
+            </table>
+        {% else %}
+            <p style="color: var(--accent-color); font-weight: bold; text-align: center; margin-top: 20px; font-size: 16px;">Данных о машине с таким заводским номером нет в системе.</p>
+        {% endif %}
+    </div>
+{% endif %}
+{% endif %}
+
+{% if user.is_authenticated %}
+    <div style="margin-top: 20px; margin-bottom: 35px; text-align: left; border-bottom: 1px solid #CCC; padding-bottom: 15px;">
+        <h2 style="color: var(--dark); font-size: 22px; margin-bottom: 10px;">
+            {% if user.is_staff or user.is_superuser %}
+                Менеджер: {{ user.username }}
+            {% elif user.service_profile %}
+                Сервисная компания: {{ user.service_profile.name }}
+            {% else %}
+                Клиент: {{ user.get_full_name|default:user.username }}
+            {% endif %}
+        </h2>
+        <p id="tab-description" style="color: var(--dark); font-size: 20px; margin-top: 5px;">Информация о комплектации и технических характеристиках Вашей техники</p>
+    </div>
+
+
+    <div style="display: flex; gap: 10px; margin-bottom: 20px;">
+        <button class="tab-btn" onclick="openTab('m-tab')" id="m-tab-btn">Машина</button>
+        <button class="tab-btn" onclick="openTab('to-tab')" id="to-tab-btn">ТО</button>
+        <button class="tab-btn" onclick="openTab('r-tab')" id="r-tab-btn">Рекламации</button>
+    </div>
+
+    <form method="GET" action="/" id="global-filter-form">
+        <input type="hidden" name="vin" value="{{ vin_query }}">
+        
+         <div id="m-tab" class="tab-content" style="display:none;">
+            <div class="filter-section">
+                <span style="font-weight: bold; color: var(--primary-color);">Фильтрация машин:</span>
+                <select name="v_model" onchange="this.form.submit()">
+                    <option value="">-- Модель техники --</option>
+                    {% for model in v_models %}
+                        <option value="{{ model.id }}" {% if selected_v_model == model.id|stringformat:"i" %}selected{% endif %}>{{ model.name }}</option>
+                    {% endfor %}
+                </select>
+                <select name="e_model" onchange="this.form.submit()">
+                    <option value="">-- Модель двигателя --</option>
+                    {% for model in e_models %}
+                        <option value="{{ model.id }}" {% if selected_e_model == model.id|stringformat:"i" %}selected{% endif %}>{{ model.name }}</option>
+                    {% endfor %}
+                </select>
+                <select name="transmission_model" onchange="this.form.submit()">
+                    <option value="">-- Модель трансмиссии --</option>
+                    {% for model in transmission_models %}
+                        <option value="{{ model.id }}" {% if selected_transmission_model == model.id|stringformat:"i" %}selected{% endif %}>{{ model.name }}</option>
+                    {% endfor %}
+                </select>
+                <select name="steering_axle_model" onchange="this.form.submit()">
+                    <option value="">-- Модель упр. моста --</option>
+                    {% for model in steering_axle_models %}
+                        <option value="{{ model.id }}" {% if selected_steering_axle_model == model.id|stringformat:"i" %}selected{% endif %}>{{ model.name }}</option>
+                    {% endfor %}
+                </select>
+                <select name="drive_axle_model" onchange="this.form.submit()">
+                    <option value="">-- Модель вед. моста --</option>
+                    {% for model in drive_axle_models %}
+                        <option value="{{ model.id }}" {% if selected_drive_axle_model == model.id|stringformat:"i" %}selected{% endif %}>{{ model.name }}</option>
+                    {% endfor %}
+                </select>
+                <a href="/" style="color: var(--accent-color); text-decoration: none; font-size: 14px; font-weight: bold;">Сбросить</a>
+            </div>
+
+            <div style="overflow-x: auto; width: 100%;">
+<table>
+    <thead>
+        <tr>
+            <th>Зав. №</th>
+            <th>Модель техники</th>
+            <th>Модель двигателя</th>
+            <th>№ двигателя</th>
+            <th>Модель трансмиссии</th>
+            <th>№ трансмиссии</th>
+            <th>Модель вед. моста</th>
+            <th>№ вед. моста</th>
+            <th>Модель упр. моста</th>
+            <th>№ упр. моста</th>
+            <th>Договор</th>
+            <th>Дата отгрузки</th>
+            <th>Грузополучатель</th>
+            <th>Адрес</th>
+            <th>Комплектация</th>
+            <th>Клиент</th>
+            <th>Сервисная компания</th>
+        </tr>
+    </thead>
+    <tbody>
+        {% for m in machines %}
+        <tr class="clickable-row">
+            <td onclick="window.location.href='{% url 'machine_detail' m.id %}'">{{ m.vin }}</td>
+            <td><span class="directory-link" onclick="alert('{{ m.vehicle_model.description|escapejs }}', 'Модель техники', '{{ m.vehicle_model.name|escapejs }}')">{{ m.vehicle_model.name }}</span></td>
+            <td><span class="directory-link" onclick="alert('{{ m.engine_model.description|escapejs }}', 'Модель двигателя', '{{ m.engine_model.name|escapejs }}')">{{ m.engine_model.name }}</span></td>
+            <td onclick="window.location.href='{% url 'machine_detail' m.id %}'">{{ m.engine_num }}</td>
+            <td><span class="directory-link" onclick="alert('{{ m.transmission_model.description|escapejs }}', 'Модель трансмиссии', '{{ m.transmission_model.name|escapejs }}')">{{ m.transmission_model.name }}</span></td>
+            <td onclick="window.location.href='{% url 'machine_detail' m.id %}'">{{ m.transmission_num }}</td>
+            <td><span class="directory-link" onclick="alert('{{ m.drive_axle_model.description|escapejs }}', 'Модель ведущего моста', '{{ m.drive_axle_model.name|escapejs }}')">{{ m.drive_axle_model.name }}</span></td>
+            <td onclick="window.location.href='{% url 'machine_detail' m.id %}'">{{ m.drive_axle_num }}</td>
+            <td><span class="directory-link" onclick="alert('{{ m.steering_axle_model.description|escapejs }}', 'Модель управляемого моста', '{{ m.steering_axle_model.name|escapejs }}')">{{ m.steering_axle_model.name }}</span></td>
+            <td onclick="window.location.href='{% url 'machine_detail' m.id %}'">{{ m.steering_axle_num }}</td>
+            <td onclick="window.location.href='{% url 'machine_detail' m.id %}'">{{ m.delivery_contract }}</td>
+            <td onclick="window.location.href='{% url 'machine_detail' m.id %}'">{{ m.shipping_date|date:"d.m.Y" }}</td>
+            <td onclick="window.location.href='{% url 'machine_detail' m.id %}'">{{ m.consignee }}</td>
+            <td onclick="window.location.href='{% url 'machine_detail' m.id %}'">{{ m.delivery_address }}</td>
+            
+            <td onclick="window.location.href='{% url 'machine_detail' m.id %}'">
+                {{ m.equipment|linebreaksbr }}
+            </td>
+            
+            <td onclick="window.location.href='{% url 'machine_detail' m.id %}'">
+                {{ m.client.get_full_name|default:m.client.username }}
+            </td>
+            
+            <td><span class="directory-link" onclick="alert('{{ m.service_company.description|escapejs }}', 'Сервисная компания', '{{ m.service_company.name|escapejs }}')">{{ m.service_company }}</span></td>
+        </tr>
+        {% endfor %}
+    </tbody>
+</table>
+
+            </div>
+        </div>
+        <div id="to-tab" class="tab-content" style="display:none;">
+            <div class="filter-section">
+                <span style="font-weight: bold; color: var(--primary-color);">Фильтрация ТО:</span>
+                <select name="mt_type" onchange="this.form.submit()">
+                    <option value="">-- Вид ТО --</option>
+                    {% for mt in mt_types %}
+                        <option value="{{ mt.id }}" {% if selected_mt_type == mt.id|stringformat:"i" %}selected{% endif %}>{{ mt.name }}</option>
+                    {% endfor %}
+                </select>
+                <input type="text" name="vin_num" value="{{ request.GET.get.vin_num|default:'' }}" placeholder="Зав. № машины..." onchange="this.form.submit()">
+                <select name="company" onchange="this.form.submit()">
+                    <option value="">-- Сервисная компания --</option>
+                    {% for c in companies %}
+                        <option value="{{ c.id }}" {% if selected_company == c.id|stringformat:"i" %}selected{% endif %}>{{ c.name }}</option>
+                    {% endfor %}
+                </select>
+                <a href="/" style="color: var(--accent-color); text-decoration: none; font-size: 14px; font-weight: bold;">Сбросить</a>
+            </div>
+
+            <div style="overflow-x: auto; width: 100%;">
+<table>
+    <thead>
+        <tr>
+            <th>Зав. № машины</th><th>Вид ТО</th><th>Дата проведения</th><th>Наработка, м/час</th><th>№ заказ-наряда</th><th>Дата заказ-наряда</th><th>Организация, проводившая ТО</th><th>Сервисная компания</th>
+        </tr>
+    </thead>
+    <tbody>
+        {% for t in maintenances %}
+        <tr class="clickable-row">
+            <td onclick="window.location.href='{% url 'maintenance_detail' t.id %}'">{{ t.machine.vin }}</td>
+            <td><span class="directory-link" onclick="alert('{{ t.maintenance_type.description|escapejs }}', 'Вид ТО', '{{ t.maintenance_type.name|escapejs }}')">{{ t.maintenance_type.name }}</span></td>
+            <td onclick="window.location.href='{% url 'maintenance_detail' t.id %}'">{{ t.maintenance_date|date:"d.m.Y" }}</td>
+            <td onclick="window.location.href='{% url 'maintenance_detail' t.id %}'">{{ t.operating_hours }}</td>
+            <td onclick="window.location.href='{% url 'maintenance_detail' t.id %}'">{{ t.order_number }}</td>
+            <td onclick="window.location.href='{% url 'maintenance_detail' t.id %}'">{{ t.order_date|date:"d.m.Y" }}</td>
+            <td><span class="directory-link" onclick="alert('{{ t.maintenance_org.description|escapejs }}', 'Организация, проводившая ТО', '{{ t.maintenance_org.name|escapejs }}')">{{ t.maintenance_org.name }}</span></td>
+            <td onclick="window.location.href='{% url 'maintenance_detail' t.id %}'">{{ t.service_company.name }}</td>
+        </tr>
+        {% empty %}
+        <tr><td colspan="8" style="text-align: center;">Записи о ТО отсутствуют.</td></tr>
+        {% endfor %}
+    </tbody>
+</table>
+
+            </div>
+        </div>
+        <div id="r-tab" class="tab-content" style="display:none;">
+            <div class="filter-section">
+                <span style="font-weight: bold; color: var(--primary-color);">Фильтрация рекламаций:</span>
+                <select name="f_node" onchange="this.form.submit()">
+                    <option value="">-- Узел отказа --</option>
+                    {% for f in f_nodes %}
+                        <option value="{{ f.id }}" {% if selected_f_node == f.id|stringformat:"i" %}selected{% endif %}>{{ f.name }}</option>
+                    {% endfor %}
+                </select>
+                <select name="r_method" onchange="this.form.submit()">
+                    <option value="">-- Способ восстановления --</option>
+                    {% for r in r_methods %}
+                        <option value="{{ r.id }}" {% if selected_r_method == r.id|stringformat:"i" %}selected{% endif %}>{{ r.name }}</option>
+                    {% endfor %}
+                </select>
+                <select name="comp_company" onchange="this.form.submit()">
+                    <option value="">-- Сервисная компания --</option>
+                    {% for c in companies %}
+                        <option value="{{ c.id }}" {% if request.GET.comp_company == c.id|stringformat:"i" %}selected{% endif %}>{{ c.name }}</option>
+                    {% endfor %}
+                </select>
+                <a href="/" style="color: var(--accent-color); text-decoration: none; font-size: 14px; font-weight: bold;">Сбросить</a>
+            </div>
+
+            <div style="overflow-x: auto; width: 100%;">
+<table>
+    <thead>
+        <tr>
+            <th>Зав. № машины</th><th>Дата отказа</th><th>Наработка, м/час</th><th>Узел отказа</th><th>Описание отказа</th><th>Способ восстановления</th><th>Используемые з/ч</th><th>Дата восстановления</th><th>Время простоя (дней)</th><th>Сервисная компания</th>
+        </tr>
+    </thead>
+    <tbody>
+        {% for cp in complaints %}
+        <tr class="clickable-row">
+            <td onclick="window.location.href='{% url 'complaint_detail' cp.id %}'">{{ cp.machine.vin }}</td>
+            <td onclick="window.location.href='{% url 'complaint_detail' cp.id %}'">{{ cp.failure_date|date:"d.m.Y" }}</td>
+            <td onclick="window.location.href='{% url 'complaint_detail' cp.id %}'">{{ cp.operating_hours }}</td>
+            <td><span class="directory-link" onclick="alert('{{ cp.failure_node.description|escapejs }}', 'Узел отказа', '{{ cp.failure_node.name|escapejs }}')">{{ cp.failure_node.name }}</span></td>
+            <td onclick="window.location.href='{% url 'complaint_detail' cp.id %}'">{{ cp.failure_description }}</td>
+            <td><span class="directory-link" onclick="alert('{{ cp.recovery_method.description|escapejs }}', 'Способ восстановления', '{{ cp.recovery_method.name|escapejs }}')">{{ cp.recovery_method.name }}</span></td>
+            <td onclick="window.location.href='{% url 'complaint_detail' cp.id %}'">{{ cp.parts_used|default:"-" }}</td>
+            <td onclick="window.location.href='{% url 'complaint_detail' cp.id %}'">{{ cp.recovery_date|date:"d.m.Y" }}</td>
+            <td onclick="window.location.href='{% url 'complaint_detail' cp.id %}'">{{ cp.downtime }}</td>
+            <td onclick="window.location.href='{% url 'complaint_detail' cp.id %}'">{{ cp.service_company.name }}</td>
+        </tr>
+        {% empty %}
+        <tr><td colspan="10" style="text-align: center;">Записи о рекламациях отсутствуют.</td></tr>
+        {% endfor %}
+    </tbody>
+</table>
+
+            </div>
+        </div>
+    </form>
+<script>
+    function openTab(tabId) {
+        var i, tabcontent, tablinks;
+        tabcontent = document.getElementsByClassName("tab-content");
+        for (i = 0; i < tabcontent.length; i++) {
+            tabcontent[i].style.display = "none";
+        }
+        tablinks = document.getElementsByClassName("tab-btn");
+        for (i = 0; i < tablinks.length; i++) {
+            tablinks[i].classList.remove("active");
+        }
+        document.getElementById(tabId).style.display = "block";
+        document.getElementById(tabId + "-btn").classList.add("active");
+        localStorage.setItem("activeSilantTab", tabId);
+
+        var desc = document.getElementById('tab-description');
+        if (desc) {
+            if (tabId === 'm-tab') {
+                desc.innerText = "Информация о комплектации и технических характеристиках Вашей техники";
+            } else if (tabId === 'to-tab') {
+                desc.innerText = "Информация о проведенных ТО Вашей техники";
+            } else {
+                desc.innerText = "Информация о зафиксированных рекламациях Вашей техники";
+            }
+        }
+    }
+
+    document.addEventListener("DOMContentLoaded", function() {
+        var activeTab = localStorage.getItem("activeSilantTab");
+        if (activeTab && document.getElementById(activeTab)) {
+            openTab(activeTab);
+        } else {
+            openTab("m-tab");
+        }
+    });
+</script>
+{% endif %}
+{% endblock %}
+

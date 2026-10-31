@@ -1,0 +1,28 @@
+{% extends 'base.html' %}
+{% block content %}
+<style>
+    table { width: 100%; border-collapse: collapse; text-align: left; margin-top: 20px; }
+    th, td { padding: 12px; border: 1px solid #CCC; font-size: 16px; }
+    th { background: var(--primary-color); color: var(--white); width: 40%; }
+    .btn-back { display: inline-block; background: var(--primary-color); color: var(--white); text-decoration: none; padding: 10px 20px; border-radius: 4px; font-weight: bold; margin-top: 20px; }
+</style>
+
+<div style="max-width: 800px; margin: 0 auto; background: var(--white); border: 1px solid #CCC; border-radius: 4px; padding: 25px; box-shadow: 0 2px 5px rgba(0,0,0,0.05);">
+    <h2 style="color: var(--primary-color); border-bottom: 2px solid var(--primary-color); padding-bottom: 10px; margin-bottom: 20px;">Карточка ТО для машины {{ mt.machine.vin }}</h2>
+    
+    <table>
+        <tr><th>Характеристика</th><td><b>Значение</b></td></tr>
+        <tr><th>Машина (Зав. №)</th><td style="color: var(--accent-color); font-weight: bold;">{{ mt.machine.vin }}</td></tr>
+        <tr><th>Вид ТО</th><td>{{ mt.maintenance_type.name }}</td></tr>
+        <tr><th>Дата проведения ТО</th><td>{{ mt.maintenance_date|date:"d.m.Y" }}</td></tr>
+        <tr><th>Наработка, м/час</th><td>{{ mt.operating_hours }}</td></tr>
+        <tr><th>№ заказ-наряда</th><td>{{ mt.order_number }}</td></tr>
+        <tr><th>Дата заказ-наряда</th><td>{{ mt.order_date|date:"d.m.Y" }}</td></tr>
+        <tr><th>Организация, проводившая ТО</th><td>{{ mt.service_company.name }}</td></tr>
+    </table>
+    
+    <div style="text-align: center;">
+        <a href="/" class="btn-back">Вернуться на главную</a>
+    </div>
+</div>
+{% endblock %}
